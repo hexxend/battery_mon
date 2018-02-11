@@ -1,8 +1,10 @@
 #!/bin/env python
 #
-#  monitor the current battery percentage
-#  hexxend 2/10/2018
+# monitor the current battery percentage
+# on non-graphical linux systems
+# hexxend 2/10/2018
 
+from os import system
 from os import path
 from sys import argv, exit
 from time import sleep
@@ -48,16 +50,21 @@ def get_status():
 
 
 def daemon_mode():
+    """
+    Monitor the battery in the background
+    """
     cur_stat = get_status()
     cur_charge = get_bat_info()
     alert = False
-    print("Current Battery Status: %s %s\n" % (cur_charge, cur_stat))
+    cur_msg = "Current Battery Status: %s %s\n" % (cur_charge, cur_stat)
+    print('%s' % cur_msg)
     while alert == False:
         try:
             sleep(5)
             if cur_charge == "1.00%" and cur_stat == "Full":
-                print("\aBattery fully charged")
-                alert = True
+                update_msg = "\aBattery fully charged"
+                alert = True 
+                print('%s' % update_msg)
                 while alert == True:
                     if get_status() == "Discharging":
                         alert = False
@@ -66,8 +73,9 @@ def daemon_mode():
 
             elif float(cur_charge.strip('%')) <= 0.20 and cur_stat == "Discharging":
                 print("\a") 
-                print("Batery level critical!", get_bat_info(), get_status())
+                update_msg = "Batery level critical! %s %s" % (get_bat_info(), get_status())
                 alert = True
+                print('%s' % update_msg)
                 while alert == True:
                     if get_status() == "Charging":
                         alert = False
@@ -75,7 +83,8 @@ def daemon_mode():
                         alert = True
                     
             if cur_stat != get_status():
-                print("\aBattery status changed from %s to %s" % (cur_stat, get_status()))
+                update_msg = "\aBattery status changed from %s to %s" % (cur_stat, get_status())
+                print('%s' % update_msg)
                 cur_stat = get_status()
 
         except KeyboardInterrupt:
@@ -83,6 +92,9 @@ def daemon_mode():
             exit(0)
 
 def get_mode():
+    """
+    parse commandline arguments
+    """
     try:
         mode = argv[1]
         if mode == "-s" or mode == "--status":
