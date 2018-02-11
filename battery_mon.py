@@ -50,24 +50,37 @@ def get_status():
 def daemon_mode():
     cur_stat = get_status()
     cur_charge = get_bat_info()
-    while True:
+    alert = False
+    print("Current Battery Status: %s %s\n" % (cur_charge, cur_stat))
+    while alert == False:
         try:
-            if cur_stat != get_status():
-                print("\aBattery status changed from %s to %s" % (cur_stat, get_status()))
-                cur_stat = get_status()
-
-            elif cur_charge == "1.00%" and cur_stat == "Full":
+            sleep(5)
+            if cur_charge == "1.00%" and cur_stat == "Full":
                 print("\aBattery fully charged")
+                alert = True
+                while alert == True:
+                    if get_status() == "Discharging":
+                        alert = False
+                    else:
+                        alert = True
 
             elif float(cur_charge.strip('%')) <= 0.20 and cur_stat == "Discharging":
                 print("\a") 
                 print("Batery level critical!", get_bat_info(), get_status())
+                alert = True
+                while alert == True:
+                    if get_status() == "Charging":
+                        alert = False
+                    else:
+                        alert = True
                     
+            if cur_stat != get_status():
+                print("\aBattery status changed from %s to %s" % (cur_stat, get_status()))
+                cur_stat = get_status()
+
         except KeyboardInterrupt:
             print("\n%s exiting..." % argv[0])
             exit(0)
-
-        sleep(5)
 
 def get_mode():
     try:
